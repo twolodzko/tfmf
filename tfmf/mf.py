@@ -180,16 +180,18 @@ class MatrixFactorizer(BaseEstimator):
                            random_state=self.random_state)
     
             
-    def _get_batch(self, data, batch_size=1):
-        # create single batch for training
-        
-        batch_rows = np.random.randint(self.shape[0], size=batch_size)
-        batch_cols = np.random.randint(self.shape[1], size=batch_size)
-
-        # extract elements from scipy.sparse matrix
-        batch_vals = data[batch_rows, batch_cols].A.flatten()
-        
-        return batch_rows, batch_cols, batch_vals
+    def _batch_generator(self, data, size=1, nonzero=False):
+        if nonzero:
+            rows, cols = data.nonzero()
+            while True:
+                idx = np.random.randint(len(rows), size=size)
+                yield rows[idx], cols[idx], data[rows[idx], cols[idx]].A.flatten()
+        else:
+            while True:
+                rows = np.random.randint(self.shape[0], size=size)
+                cols = np.random.randint(self.shape[1], size=size)
+                vals = data[rows, cols].A.flatten()
+                yield rows, cols, vals
 
 
     def save(self, path):
@@ -293,8 +295,11 @@ class MatrixFactorizer(BaseEstimator):
         if self._tf is None:
             self.init_with_shape(*sparse_matrix.shape)
         
+        batch = self._batch_generator(sparse_matrix, size=self.batch_size,
+                                      nonzero=not self.implicit)
+
         for _ in trange(self.n_iter, disable=not self.show_progress):
-            batch_rows, batch_cols, batch_vals = self._get_batch(sparse_matrix, self.batch_size)
+            batch_rows, batch_cols, batch_vals = next(batch)
             loss_value = self._tf.train(batch_rows, batch_cols, batch_vals)
             self.history.append(loss_value)
                 
