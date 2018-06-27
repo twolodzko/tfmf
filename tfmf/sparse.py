@@ -21,7 +21,6 @@ def sparse_matrix(rows, cols, values, shape=None, mode='dok'):
 
     mode : 'dok', 'csr', default : 'dok'
         Type of sparse matrix to be used. See scipy.sparse documentation for details.
-
     """
 
     if shape is None:
