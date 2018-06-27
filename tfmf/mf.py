@@ -171,10 +171,8 @@ class MatrixFactorizer(BaseEstimator):
         self.history = []
     
     
-    def _tf_init(self, shape=None):
+    def _tf_init(self):
         # define the TensorFlow model and initialize variables, session, saver
-        if shape is None:
-            shape = self.shape
         self._tf = TFModel(shape=self.shape, learning_rate=self.learning_rate,
                            alpha=self.alpha, regularization_rate=self.regularization_rate,
                            implicit=self.implicit, loss=self.loss, log_weights=self.log_weights,
@@ -201,7 +199,7 @@ class MatrixFactorizer(BaseEstimator):
             Shape of the factorized matrix.
         '''
         self.shape = (int(n), int(k), int(self.n_components))
-        self._tf_init(self.shape)
+        self._tf_init()
     
     
     def fit(self, sparse_matrix):
