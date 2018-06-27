@@ -1,12 +1,9 @@
 
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
-from sklearn.base import BaseEstimator, RegressorMixin
-from tqdm import tqdm, trange
+from sklearn.base import BaseEstimator
+from tqdm import trange
 from scipy.sparse import coo_matrix, csr_matrix
-import json
 
 from .tf_model import TFModel
 
