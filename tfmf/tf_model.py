@@ -172,5 +172,4 @@ class TFModel(object):
     
     
     def restore(self, path):
-        self.sess = tf.Session()
         self.saver.restore(self.sess, path)

@@ -190,6 +190,68 @@ class MatrixFactorizer(BaseEstimator):
         batch_vals = data[batch_rows, batch_cols].A.flatten()
         
         return batch_rows, batch_cols, batch_vals
+
+
+    def save(self, path):
+        """Save model
+
+        Parameters
+        ----------
+
+        path : str
+            Directory where model files are saved.
+        """
+        self._tf.save(path)
+
+
+    def restore(self, path):
+        """Restore model from saved files
+
+        Parameters
+        ----------
+
+        path : str
+            Directory where model files can be found.
+
+        Examples
+        --------
+ 
+        >>> import tempfile
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> from tfmf import MatrixFactorizer, sparse_matrix
+        >>> user_id = [0,0,0,1,1,1,2,2,2]
+        >>> movie_id = [0,1,2,0,1,2,0,1,2]
+        >>> rating = [0,1,1,2,2,3,3,4,4]
+        >>> X = sparse_matrix(user_id, movie_id, rating)
+        >>> mf = MatrixFactorizer(n_components=2, n_iter=2500, batch_size=9, show_progress=True,
+                                  regularization_rate=0.1, fit_intercepts=False, random_state=42)
+        >>> mf.fit(X)
+        MatrixFactorizer(alpha=1.0, batch_size=9, fit_intercepts=False,
+                 implicit=False, learning_rate=0.01, log_weights=None,
+                 loss='squared', n_components=2, n_iter=2500, optimizer='Adam',
+                 random_state=42, regularization_rate=0.1, show_progress=True,
+                 warm_start=False)
+        >>> np.reshape(mf.predict(user_id, movie_id), (3, 3))
+        array([[0.36638957, 0.82455045, 0.7515532 ],
+               [1.8798509 , 2.2950716 , 2.664069  ],
+               [2.6847882 , 3.658589  , 4.039307  ]], dtype=float32)
+        >>> tmpdir = tempfile.gettempdir()
+        >>> mf.save(tmpdir + '/tfmf')
+        >>> mf = MatrixFactorizer(n_components=2, n_iter=2500, batch_size=9, show_progress=True,
+                                  regularization_rate=0.1, fit_intercepts=False, random_state=42)
+        >>> mf.init_with_shape(3, 3)
+        >>> np.reshape(mf.predict(user_id, movie_id), (3, 3))
+        array([[ 1.11211761e-04,  1.85020617e-04,  5.69926306e-05],
+               [-7.57966773e-05, -1.24432714e-04, -4.61529817e-05],
+               [ 1.14005406e-05,  1.75371242e-05,  1.21055045e-05]], dtype=float32)
+        >>> mf.restore(tmpdir + '/tfmf')
+        >>> np.reshape(mf.predict(user_id, movie_id), (3, 3))
+        array([[0.36638957, 0.82455045, 0.7515532 ],
+               [1.8798509 , 2.2950716 , 2.664069  ],
+               [2.6847882 , 3.658589  , 4.039307  ]], dtype=float32)
+        """
+        self._tf.restore(path)
     
       
     def init_with_shape(self, n, k):
