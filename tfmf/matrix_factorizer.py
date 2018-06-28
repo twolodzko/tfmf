@@ -138,6 +138,12 @@ class MatrixFactorizer(BaseEstimator):
                  regularization_rate=0.02, alpha=1.0, implicit=False, loss='squared',
                  log_weights=None, fit_intercepts=True, warm_start=False, optimizer='Adam',
                  random_state=None, show_progress=True):
+
+        if loss not in ['squared', 'logistic']:
+            raise ValueError("use 'squared' or 'logistic' loss")
+
+        if optimizer not in ['Adam', 'Ftrl']:
+            raise ValueError("use 'Adam' or 'Ftrl' optimizer")
         
         self.n_components = n_components
         self.shape = (None, None, self.n_components)

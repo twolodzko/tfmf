@@ -10,12 +10,6 @@ class TFModel(object):
                  implicit, loss, log_weights, fit_intercepts, optimizer,
                  random_state=None):
 
-        if loss not in ['squared', 'logistic']:
-            raise ValueError("use 'squared' or 'logistic' loss")
-
-        if optimizer not in ['Adam', 'Ftrl']:
-            raise ValueError("use 'Adam' or 'Ftrl' optimizer")
-
         self.shape = shape
         self.learning_rate = learning_rate
         self.implicit = implicit
