@@ -177,7 +177,7 @@ class TFModel(object):
 
 if __name__ == "__main__":
 
-    # test for obvious fails in initialization
+    # test for obvious fails during initialization
 
     for test_implicit in [True, False]:
         for test_loss in ['squared', 'logistic']:
@@ -196,8 +196,8 @@ if __name__ == "__main__":
                         print('Model: ', settings)
 
                         model = TFModel(shape=(3,3,2), learning_rate=1, alpha=1,
-                                        regularization_rate=1, **settings,
-                                        random_state=None)
+                                        regularization_rate=0, **settings,
+                                        random_state=42)
 
                         model.train([0,1], [0,1], [2,2])
                         model.predict([0,1], [0,1])
