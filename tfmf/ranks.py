@@ -23,7 +23,7 @@ def rank(data, axis=1):
     # see: https://stackoverflow.com/a/51081190/3986320
 
     if axis not in [0, 1]:
-        raise ValueError
+        raise ValueError('use 0 or 1 for axis')
 
     sidx = np.argsort(-data, axis=axis)
     m,n = data.shape

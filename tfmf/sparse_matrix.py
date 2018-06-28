@@ -24,6 +24,9 @@ def sparse_matrix(rows, cols, values, shape=None, mode='dok'):
         Type of sparse matrix to be used. See scipy.sparse documentation for details.
     """
 
+    if mode not in ['dok', 'csr', 'csc', 'coo']:
+        raise ValueError
+
     if shape is None:
         n = np.max(rows) + 1
         k = np.max(cols) + 1
