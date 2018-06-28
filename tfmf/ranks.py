@@ -21,7 +21,10 @@ def rank(data, axis=1):
         Ranked data array.
     """
     # see: https://stackoverflow.com/a/51081190/3986320
-    
+
+    if axis not in [0, 1]:
+        raise ValueError
+
     sidx = np.argsort(-data, axis=axis)
     m,n = data.shape
     out = np.empty((m,n), dtype=int)
@@ -48,7 +51,7 @@ def top_k_ranks(data, k=5, axis=1):
         Ranked data array.
     """
 
-    k = min(k, data.shape[axis])
+    k = max(1, min(k, data.shape[axis]))
     ranked = rank(data, axis=axis)
 
     if axis == 1:

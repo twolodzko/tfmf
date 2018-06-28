@@ -315,9 +315,32 @@ class MatrixFactorizer(BaseEstimator):
         return self
     
     
-    def predict(self, rows=None, cols=None):
+    def predict(self, rows, cols):
         '''Predict using the model
         
+        Parameters
+        ----------
+        
+        rows : array, shape (n_samples,)
+            Make predictions for those row indexes. If not provided,
+            makes predictions for all the possible rows (use with caution).
+
+        cols : array, shape (n_samples,)
+            Make predictions for those  column indexes. If not provided,
+            makes predictions for all the possible columns (use with caution).
+
+        Returns
+        -------
+        array, shape (n_samples,)
+            Predictions for given indexes.
+        '''
+        
+        return self._tf.predict(rows, cols)
+
+    
+    def predict_all(self, rows=None, cols=None):
+        '''Make predictions for the whole matrix, or slices of the matrix
+
         Parameters
         ----------
         
@@ -335,29 +358,16 @@ class MatrixFactorizer(BaseEstimator):
             Matrix of predictions for given indexes.
         '''
 
-        if rows is None and cols is None:
-            raise ValueError('provide rows, cols, or both')
+        if cols is None and rows is None:
+            rows = np.repeat([x for x in range(self.shape[0])], self.shape[1])
+            cols = np.array([x for x in range(self.shape[1])] * self.shape[0])
         elif cols is None:
             cols = np.array([x for x in range(self.shape[1])] * len(rows))
             rows = np.repeat(rows, self.shape[1])
         elif rows is None:
             rows = np.array([x for x in range(self.shape[0])] * len(cols))
             cols = np.repeat(cols, self.shape[0])
-        
-        preds = self._tf.predict(rows, cols)
-        
-        return sparse_matrix(rows, cols, preds, shape=self.shape[:2], mode='csr')
 
-    
-    def predict_all(self):
-        '''Make predictions for whole matrix
-
-        Returns
-        -------
-        scipy.sparse.csr_matrix, shape (n_rows, n_cols)
-            Matrix of predictions for all indexes.
-        '''
-        rows = np.repeat([x for x in range(self.shape[0])], self.shape[1])
-        cols = np.array([x for x in range(self.shape[1])] * self.shape[0])
         preds = self._tf.predict(rows, cols)
+
         return sparse_matrix(rows, cols, preds, shape=self.shape[:2], mode='csr')
