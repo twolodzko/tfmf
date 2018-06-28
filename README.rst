@@ -28,11 +28,10 @@ and random batches of size 4 for the training.
 
     mf = MatrixFactorizer(n_components=2, batch_size=4, implicit=False)
     mf.fit(X)
-    X_full = np.array([[i,j] for i in range(3) for j in range(3)])
-    np.reshape(mf.predict(X_full[:,0], X_full[:,1]), (3,3))
-    ## array([[1.027492  , 0.99959517, 1.0010808 ],
-    ##        [1.9425895 , 2.033092  , 2.0300255 ],
-    ##        [2.738347  , 2.9628766 , 2.954407  ]], dtype=float32)
+    mf.predict_all().A
+    ## array([[1.013387 , 1.0056534, 1.11131  ],
+    ##        [1.926976 , 1.8363876, 1.9962051],
+    ##        [1.9263643, 2.969007 , 2.9673567]], dtype=float32)
     X.A
     ## array([[1, 1, 0],
     ##        [2, 0, 2],
@@ -55,10 +54,10 @@ because it wasn't trained yet.
 
     mf = MatrixFactorizer(n_components=2, batch_size=4, implicit=False)
     mf.init_with_shape(3, 3)
-    np.reshape(mf.predict(X_full[:,0], X_full[:,1]), (3,3))
-    ## array([[-3.88692170e-05,  1.02325015e-04,  3.66907625e-04],
-    ##        [-3.07143564e-05, -2.27056171e-05,  2.18227942e-05],
-    ##        [-2.47780608e-05, -1.64722569e-05,  2.23812822e-05]], dtype=float32)
+    mf.predict_all().A
+    ## array([[ 4.6303128e-05, -5.7351419e-05,  1.7567796e-05],
+    ##        [-1.0485943e-04,  6.2389910e-05, -3.7540267e-05],
+    ##        [-1.2580390e-04, -2.4326339e-04, -3.4460012e-05]], dtype=float32)
 
 Instead of training, we resore the previously learned parameters. Such restored model
 can be trained further using the ``partial_fit`` method, or used to make predictions.
@@ -66,10 +65,10 @@ can be trained further using the ``partial_fit`` method, or used to make predict
 .. code-block:: python
 
     mf.restore(tmpdir + '/tfmf')
-    np.reshape(mf.predict(X_full[:,0], X_full[:,1]), (3,3))
-    ## array([[1.027492  , 0.99959517, 1.0010808 ],
-    ##        [1.9425895 , 2.033092  , 2.0300255 ],
-    ##        [2.738347  , 2.9628766 , 2.954407  ]], dtype=float32)
+    mf.predict_all().A
+    ## array([[1.013387 , 1.0056534, 1.11131  ],
+    ##        [1.926976 , 1.8363876, 1.9962051],
+    ##        [1.9263643, 2.969007 , 2.9673567]], dtype=float32)
 
 References
 ----------

@@ -7,8 +7,8 @@ class TFModel(object):
     # Define and initialize the TensorFlow model, its weights, initialize session and saver
 
     def __init__(self, shape, learning_rate, alpha, regularization_rate,
-                    implicit, loss, log_weights, fit_intercepts, optimizer,
-                    random_state=None):
+                 implicit, loss, log_weights, fit_intercepts, optimizer,
+                 random_state=None):
 
         self.shape = shape
         self.learning_rate = learning_rate
@@ -173,3 +173,32 @@ class TFModel(object):
     
     def restore(self, path):
         self.saver.restore(self.sess, path)
+
+
+if __name__ == "__main__":
+
+    # test for obvious fails in initialization
+
+    for test_implicit in [True, False]:
+        for test_loss in ['squared', 'logistic']:
+            for test_log_weights in [True, False]:
+                for test_fit_intercepts in [True, False]:
+                    for test_optimizer in ['Adam', 'Ftrl']:
+                        
+                        settings = {
+                            'implicit' : test_implicit,
+                            'loss' : test_loss,
+                            'log_weights' : test_log_weights,
+                            'fit_intercepts' : test_fit_intercepts,
+                            'optimizer' : test_optimizer
+                        }
+
+                        print('Model: ', settings)
+
+                        model = TFModel(shape=(3,3,2), learning_rate=1, alpha=1,
+                                        regularization_rate=1, **settings,
+                                        random_state=None)
+
+                        model.train([0,1], [0,1], [2,2])
+                        model.predict([0,1], [0,1])
+                        model.coef()

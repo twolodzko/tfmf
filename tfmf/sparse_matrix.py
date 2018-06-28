@@ -1,6 +1,6 @@
 
 import numpy as np
-from scipy.sparse import coo_matrix, csr_matrix
+from scipy.sparse import coo_matrix
 
 
 def sparse_matrix(rows, cols, values, shape=None, mode='dok'):
@@ -20,15 +20,23 @@ def sparse_matrix(rows, cols, values, shape=None, mode='dok'):
     shape : tuple (n_rows, n_cols)
         Shape of the resulting matrix.
 
-    mode : 'dok', 'csr', default : 'dok'
+    mode : 'dok', 'csr', 'csc', 'coo', default : 'dok'
         Type of sparse matrix to be used. See scipy.sparse documentation for details.
     """
 
     if shape is None:
         n = np.max(rows) + 1
         k = np.max(cols) + 1
-    
-    if mode == 'dok':
-        return coo_matrix((values, (rows, cols)), shape=(n, k)).todok()
     else:
-        return csr_matrix((values, (rows, cols)), shape=(n, k))
+        n, k = shape
+    
+    mtx = coo_matrix((values, (rows, cols)), shape=(n, k))
+
+    if mode == 'csr':    
+        return mtx.tocsr()
+    elif mode == 'csc':
+        return mtx.tocsc()
+    elif mode == 'dok':
+        return mtx.todok()
+    else:
+        return mtx

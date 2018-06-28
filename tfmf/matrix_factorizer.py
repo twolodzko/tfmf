@@ -6,6 +6,7 @@ from tqdm import trange
 from scipy.sparse import coo_matrix, csr_matrix
 
 from .tf_model import TFModel
+from .sparse_matrix import sparse_matrix
 
 
 class MatrixFactorizer(BaseEstimator):
@@ -112,8 +113,7 @@ class MatrixFactorizer(BaseEstimator):
             learning_rate=0.01, log_weights=None, loss='squared',
             n_components=2, n_iter=100, optimizer='Adam', random_state=42,
             regularization_rate=0.02, show_progress=False, warm_start=False)
-    >>> X_full = np.array([[i,j] for i in range(3) for j in range(3)])
-    >>> np.reshape(mf.predict(X_full[:,0], X_full[:,1]), (3,3))
+    >>> mf.predict_all().A
     array([[1.1241099 , 0.4444648 , 0.5635694 ],
            [1.6370661 , 1.1460071 , 1.2965162 ],
            [0.55132747, 2.502296  , 2.5540314 ]], dtype=float32)
@@ -182,11 +182,13 @@ class MatrixFactorizer(BaseEstimator):
             
     def _batch_generator(self, data, size=1, nonzero=False):
         if nonzero:
+            # for explicit ratings
             rows, cols = data.nonzero()
             while True:
                 idx = np.random.randint(len(rows), size=size)
                 yield rows[idx], cols[idx], data[rows[idx], cols[idx]].A.flatten()
         else:
+            # for implicit ratings
             while True:
                 rows = np.random.randint(self.shape[0], size=size)
                 cols = np.random.randint(self.shape[1], size=size)
@@ -234,7 +236,7 @@ class MatrixFactorizer(BaseEstimator):
                  loss='squared', n_components=2, n_iter=2500, optimizer='Adam',
                  random_state=42, regularization_rate=0.1, show_progress=True,
                  warm_start=False)
-        >>> np.reshape(mf.predict(user_id, movie_id), (3, 3))
+        >>> mf.predict_all().A
         array([[0.36638957, 0.82455045, 0.7515532 ],
                [1.8798509 , 2.2950716 , 2.664069  ],
                [2.6847882 , 3.658589  , 4.039307  ]], dtype=float32)
@@ -243,12 +245,12 @@ class MatrixFactorizer(BaseEstimator):
         >>> mf = MatrixFactorizer(n_components=2, n_iter=2500, batch_size=9, show_progress=True,
                                   regularization_rate=0.1, fit_intercepts=False, random_state=42)
         >>> mf.init_with_shape(3, 3)
-        >>> np.reshape(mf.predict(user_id, movie_id), (3, 3))
+        >>> mf.predict_all().A
         array([[ 1.11211761e-04,  1.85020617e-04,  5.69926306e-05],
                [-7.57966773e-05, -1.24432714e-04, -4.61529817e-05],
                [ 1.14005406e-05,  1.75371242e-05,  1.21055045e-05]], dtype=float32)
         >>> mf.restore(tmpdir + '/tfmf')
-        >>> np.reshape(mf.predict(user_id, movie_id), (3, 3))
+        >>> mf.predict_all().A
         array([[0.36638957, 0.82455045, 0.7515532 ],
                [1.8798509 , 2.2950716 , 2.664069  ],
                [2.6847882 , 3.658589  , 4.039307  ]], dtype=float32)
@@ -269,6 +271,9 @@ class MatrixFactorizer(BaseEstimator):
     def fit(self, sparse_matrix):
         '''Fit the model
         
+        Fit the model starting at randomly initialized parameters. When
+        warm_start=True, this method works same as partial_fit.
+
         Parameters
         ----------
         
@@ -284,6 +289,10 @@ class MatrixFactorizer(BaseEstimator):
     def partial_fit(self, sparse_matrix):
         '''Fit the model
         
+        Fit the model starting at previously trained parameter values. If the
+        model was not trained yet, it randomly initializes parameters same as
+        the fit method.
+
         Parameters
         ----------
         
@@ -306,17 +315,49 @@ class MatrixFactorizer(BaseEstimator):
         return self
     
     
-    def predict(self, rows, cols):
+    def predict(self, rows=None, cols=None):
         '''Predict using the model
         
         Parameters
         ----------
         
         rows : array, shape (n_samples,)
-            Row indexes.
+            Make predictions for those row indexes. If not provided,
+            makes predictions for all the possible rows (use with caution).
 
         cols : array, shape (n_samples,)
-            Column indexes.
+            Make predictions for those  column indexes. If not provided,
+            makes predictions for all the possible columns (use with caution).
+
+        Returns
+        -------
+        scipy.sparse.csr_matrix, shape (n_rows, n_cols)
+            Matrix of predictions for given indexes.
         '''
+
+        if rows is None and cols is None:
+            raise ValueError('provide rows, cols, or both')
+        elif cols is None:
+            cols = np.array([x for x in range(self.shape[1])] * len(rows))
+            rows = np.repeat(rows, self.shape[1])
+        elif rows is None:
+            rows = np.array([x for x in range(self.shape[0])] * len(cols))
+            cols = np.repeat(cols, self.shape[0])
         
-        return self._tf.predict(rows, cols)
+        preds = self._tf.predict(rows, cols)
+        
+        return sparse_matrix(rows, cols, preds, shape=self.shape[:2], mode='csr')
+
+    
+    def predict_all(self):
+        '''Make predictions for whole matrix
+
+        Returns
+        -------
+        scipy.sparse.csr_matrix, shape (n_rows, n_cols)
+            Matrix of predictions for all indexes.
+        '''
+        rows = np.repeat([x for x in range(self.shape[0])], self.shape[1])
+        cols = np.array([x for x in range(self.shape[1])] * self.shape[0])
+        preds = self._tf.predict(rows, cols)
+        return sparse_matrix(rows, cols, preds, shape=self.shape[:2], mode='csr')
