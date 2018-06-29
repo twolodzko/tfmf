@@ -1,8 +1,8 @@
 This package implements ``MatrixFactorizer`` class for collaborative filtering
 using matrix factorization with implicit (Hu et al, 2008) and explicit ratings
 (Koren et al, 2009, Yu et al, 2012). The ``MatrixFactorizer`` class works with
-sparse data (``scipy.sparse`` matrices) and should be able to scale due using
-TensorFlow backend. The trained models can be easily saved and restored.
+sparse data (``scipy.sparse_`` matrices) and should be able to scale due to using
+TensorFlow_ backend. The trained models can be easily saved and restored.
 
 Example
 -------
@@ -83,3 +83,7 @@ In Data Mining (ICDM), 2012 IEEE 12th International Conference on (pp. 765-774).
 Hu, Y., Koren, Y., & Volinsky, C. (2008, December).
 Collaborative filtering for implicit feedback datasets.
 In Data Mining, 2008. ICDM'08. Eighth IEEE International Conference on (pp. 263-272). IEEE.
+
+
+.. _scipy.sparse: https://docs.scipy.org/doc/scipy/reference/sparse.html
+.. _TensorFlow: http://tensorflow.org/
