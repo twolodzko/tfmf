@@ -54,7 +54,7 @@ class TFModel(object):
             with tf.name_scope('parameters'):
                 
                 if self.fit_intercepts:
-                    # mu
+                    # b0
                     self.global_bias = tf.get_variable('global_bias', shape=[], dtype=tf.float32,
                                                         initializer=tf.zeros_initializer())
                     # bi
@@ -139,7 +139,8 @@ class TFModel(object):
             self.col_ids : cols,
             self.values : values
         }
-        _, loss_value = self.sess.run(fetches=[self.train_step, self.cost], feed_dict=batch)
+        _, loss_value = self.sess.run(fetches=[self.train_step, self.cost],
+                                      feed_dict=batch)
         return loss_value
     
     
@@ -173,32 +174,3 @@ class TFModel(object):
     
     def restore(self, path):
         self.saver.restore(self.sess, path)
-
-
-if __name__ == "__main__":
-
-    # test for obvious fails during initialization
-
-    for test_implicit in [True, False]:
-        for test_loss in ['squared', 'logistic']:
-            for test_log_weights in [True, False]:
-                for test_fit_intercepts in [True, False]:
-                    for test_optimizer in ['Adam', 'Ftrl']:
-                        
-                        settings = {
-                            'implicit' : test_implicit,
-                            'loss' : test_loss,
-                            'log_weights' : test_log_weights,
-                            'fit_intercepts' : test_fit_intercepts,
-                            'optimizer' : test_optimizer
-                        }
-
-                        print('Model: ', settings)
-
-                        model = TFModel(shape=(3,3,2), learning_rate=1, alpha=1,
-                                        regularization_rate=0, **settings,
-                                        random_state=42)
-
-                        model.train([0,1], [0,1], [2,2])
-                        model.predict([0,1], [0,1])
-                        model.coef()

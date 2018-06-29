@@ -22,7 +22,10 @@ The data is converted to to ``scipy.sparse.dok_matrix`` format using the
     X = sparse_matrix(user_id, movie_id, rating)
 
 The model is trained using the ``fit`` method. We choose to use two latent dimmensions
-and random batches of size 4 for the training. 
+and random batches of size 4 for the training. To make predictions from the model, we
+use ``predict_all`` method that makes predictions for the whole factorized matrix
+(or slices of it), but more standard choice would be to use ``predict(user_ids, item_ids)``
+method for making predictions for individual users and items.
 
 .. code-block:: python
 

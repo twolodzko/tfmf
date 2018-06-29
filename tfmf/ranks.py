@@ -26,8 +26,8 @@ def rank(data, axis=1):
         raise ValueError('use 0 or 1 for axis')
 
     sidx = np.argsort(-data, axis=axis)
-    m,n = data.shape
-    out = np.empty((m,n), dtype=int)
+    m, n = data.shape
+    out = np.empty((m, n), dtype=int)
     if axis == 1:
         out[np.arange(m)[:, None], sidx] = np.arange(n)
     else:
@@ -50,7 +50,6 @@ def top_k_ranks(data, k=5, axis=1):
     array, shape (n_rows or n_cols, k)
         Ranked data array.
     """
-
     k = max(1, min(k, data.shape[axis]))
     ranked = rank(data, axis=axis)
 
@@ -67,49 +66,3 @@ def top_k_ranks(data, k=5, axis=1):
             out[r, idx[:, 1]] = idx[:, 0]
 
     return out
-
-
-if __name__ == "__main__":
-
-    # unit tests
-
-    X = np.array([
-        [1,2,30],
-        [4,5,6],
-        [90,8,7],
-        [12,15,10]
-    ])
-
-    X_true_rank_ax1 = np.array([
-        [2, 1, 0],
-        [2, 1, 0],
-        [0, 1, 2],
-        [1, 0, 2]
-    ])
-
-    assert np.all(rank(X, axis=1) == X_true_rank_ax1)
-
-    X_true_rank_ax0 = np.array([
-        [3, 3, 0],
-        [2, 2, 3],
-        [0, 1, 2],
-        [1, 0, 1]
-    ])
-
-    assert np.all(rank(X, axis=0) == X_true_rank_ax0)
-
-    X_top2_ax1 = np.array([
-        [2, 1],
-        [2, 1],
-        [0, 1],
-        [1, 0],
-    ])
-
-    assert np.all(top_k_ranks(X, k=2, axis=1) == X_top2_ax1)
-
-    X_top2_ax0 = np.array([
-        [2, 3, 0],
-        [3, 2, 3]
-    ])
-
-    assert np.all(top_k_ranks(X, k=2, axis=0) == X_top2_ax0)

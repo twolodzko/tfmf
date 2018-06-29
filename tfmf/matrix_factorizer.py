@@ -18,9 +18,9 @@ class MatrixFactorizer(BaseEstimator):
     
         R[i,j] = P[i,:] * Q[:,j]
     
-    Additional intercepts mu, bi, bj can be included, leading to the following model:
+    Additional intercepts b0, bi, bj can be included, leading to the following model:
     
-        R[i,j] = mu + bi[i] + bj[j] + P[i,:] * Q[:,j]
+        R[i,j] = b0 + bi[i] + bj[j] + P[i,:] * Q[:,j]
         
     The model is commonly used for collaborative filtering in recommender systems, where
     the matrix R contains of ratings by n users of k products. When users rate products
@@ -131,7 +131,6 @@ class MatrixFactorizer(BaseEstimator):
     Hu, Y., Koren, Y., & Volinsky, C. (2008, December).
     Collaborative filtering for implicit feedback datasets.
     In Data Mining, 2008. ICDM'08. Eighth IEEE International Conference on (pp. 263-272). IEEE.
-    
     """ 
         
     def __init__(self, n_components=5, n_iter=500, batch_size=500, learning_rate=0.01,
@@ -265,20 +264,20 @@ class MatrixFactorizer(BaseEstimator):
     
       
     def init_with_shape(self, n, k):
-        '''Manually initialize model for given shape of factorized matrix
+        """Manually initialize model for given shape of factorized matrix
 
         n, k : int
             Shape of the factorized matrix.
-        '''
+        """
         self.shape = (int(n), int(k), int(self.n_components))
         self._tf_init()
     
     
     def fit(self, sparse_matrix):
-        '''Fit the model
+        """Fit the model
         
         Fit the model starting at randomly initialized parameters. When
-        warm_start=True, this method works same as partial_fit.
+        warm_start=True, this method works the same as partial_fit.
 
         Parameters
         ----------
@@ -286,14 +285,14 @@ class MatrixFactorizer(BaseEstimator):
         sparse_matrix : sparse-matrix, shape (n_users, n_items)
             Sparse matrix in scipy.sparse format, can be created using sparse_matrix
             function from this package.
-        '''
+        """
         if not self.warm_start:
             self._fresh_session()
         return self.partial_fit(sparse_matrix)
     
     
     def partial_fit(self, sparse_matrix):
-        '''Fit the model
+        """Fit the model
         
         Fit the model starting at previously trained parameter values. If the
         model was not trained yet, it randomly initializes parameters same as
@@ -305,8 +304,7 @@ class MatrixFactorizer(BaseEstimator):
         sparse_matrix : sparse-matrix, shape (n_users, n_items)
             Sparse matrix in scipy.sparse format, can be created using sparse_matrix
             function from this package.
-        '''
-                    
+        """
         if self._tf is None:
             self.init_with_shape(*sparse_matrix.shape)
         
@@ -322,7 +320,7 @@ class MatrixFactorizer(BaseEstimator):
     
     
     def predict(self, rows, cols):
-        '''Predict using the model
+        """Predict using the model
         
         Parameters
         ----------
@@ -339,13 +337,12 @@ class MatrixFactorizer(BaseEstimator):
         -------
         array, shape (n_samples,)
             Predictions for given indexes.
-        '''
-        
+        """
         return self._tf.predict(rows, cols)
 
     
     def predict_all(self, rows=None, cols=None):
-        '''Make predictions for the whole matrix, or slices of the matrix
+        """Make predictions for the whole matrix, or slices of the matrix
 
         Parameters
         ----------
@@ -362,8 +359,7 @@ class MatrixFactorizer(BaseEstimator):
         -------
         scipy.sparse.csr_matrix, shape (n_rows, n_cols)
             Matrix of predictions for given indexes.
-        '''
-
+        """
         if cols is None and rows is None:
             rows = np.repeat([x for x in range(self.shape[0])], self.shape[1])
             cols = np.array([x for x in range(self.shape[1])] * self.shape[0])
