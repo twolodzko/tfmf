@@ -12,6 +12,8 @@ class TFModel(object):
 
         self.shape = shape
         self.learning_rate = learning_rate
+        self.alpha = alpha
+        self.regularization_rate = regularization_rate
         self.implicit = implicit
         self.loss = loss
         self.log_weights = log_weights
@@ -19,20 +21,22 @@ class TFModel(object):
         self.optimizer = optimizer
         self.random_state = random_state
 
+        tf.set_random_seed(self.random_state)
+        self._init_model_and_session()
+
+
+    def _init_model_and_session(self):
+
         # the R (n, k) matrix is factorized to P (n, d) and Q (k, d) matrices
         n, k, d = self.shape
-
-        # initialize the graph
         self.graph = tf.Graph()
 
         with self.graph.as_default():
 
-            tf.set_random_seed(self.random_state)
-
             with tf.name_scope('constants'):
-                self.alpha = tf.constant(alpha, dtype=tf.float32)
-                self.regularization_rate = tf.constant(regularization_rate, dtype=tf.float32,
-                                                        name='regularization_rate')
+                alpha = tf.constant(self.alpha, dtype=tf.float32)
+                regularization_rate = tf.constant(self.regularization_rate, dtype=tf.float32,
+                                                  name='regularization_rate')
 
             with tf.name_scope('inputs'):
                 self.row_ids = tf.placeholder(tf.int32, shape=[None], name='row_ids')
@@ -44,9 +48,9 @@ class TFModel(object):
                     targets = tf.clip_by_value(self.values, 0, 1, name='targets')
                     
                     if self.log_weights:
-                        data_weights = tf.add(1.0, self.alpha * tf.log1p(self.values), name='data_weights')
+                        data_weights = tf.add(1.0, alpha * tf.log1p(self.values), name='data_weights')
                     else:
-                        data_weights = tf.add(1.0, self.alpha * self.values, name='data_weights')
+                        data_weights = tf.add(1.0, alpha * self.values, name='data_weights')
                 else:
                     targets = tf.identity(self.values, name='targets')
                     data_weights = tf.constant(1.0, name='data_weights')
@@ -108,7 +112,7 @@ class TFModel(object):
                 else:
                     l2_term = l2_weights
                 
-                l2_term = tf.multiply(self.regularization_rate, l2_term, name='regularization')
+                l2_term = tf.multiply(regularization_rate, l2_term, name='regularization')
 
                 if self.loss == 'logistic':
                     loss_raw = tf.losses.log_loss(predictions=self.pred, labels=targets,
