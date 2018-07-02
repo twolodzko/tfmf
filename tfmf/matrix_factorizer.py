@@ -187,13 +187,13 @@ class MatrixFactorizer(BaseEstimator):
          
    def _batch_generator(self, data, size=1, nonzero=False):
       if nonzero:
-         # for explicit ratings
+         # for explicit ratings sample from OBSERVED cells 
          rows, cols = data.nonzero()
          while True:
             idx = np.random.randint(len(rows), size=size)
             yield rows[idx], cols[idx], data[rows[idx], cols[idx]].A.flatten()
       else:
-         # for implicit ratings
+         # for implicit ratings sample from ALL POSSIBLE cells
          while True:
             rows = np.random.randint(self.shape[0], size=size)
             cols = np.random.randint(self.shape[1], size=size)
