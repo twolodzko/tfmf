@@ -310,9 +310,12 @@ class MatrixFactorizer(BaseEstimator):
       
       batch = self._batch_generator(sparse_matrix, size=self.batch_size,
                                     nonzero=not self.implicit)
-
+      
       for _ in trange(self.n_iter, disable=not self.show_progress):
          batch_rows, batch_cols, batch_vals = next(batch)
+         batch_rows = batch_rows.astype(np.int64)
+         batch_cols = batch_cols.astype(np.int64)
+         batch_vals = batch_vals.astype(np.float32)
          loss_value = self._tf.train(batch_rows, batch_cols, batch_vals)
          self.history.append(loss_value)
             
